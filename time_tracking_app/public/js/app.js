@@ -265,22 +265,18 @@ class EditableTimerList extends React.Component {
 
 class TimersDashboard extends React.Component {
   state = {
-    timers: [
-      {
-        title: "Practice magic",
-        project: "Spoopy",
-        id: uuid.v4(),
-        elapsed: 5456099,
-        runningSince: Date.now()
-      },
-      {
-        title: "Bake a cake",
-        project: "Kitchen Chores",
-        id: uuid.v4(),
-        elapsed: 1273998,
-        runningSince: null
-      }
-    ]
+    timers: []
+  }
+
+  componentDidMount() {
+    this.loadTimersFromServer()
+    setInterval(this.loadTimersFromServer, 5000)
+  }
+
+  loadTimersFromServer = () => {
+    client.getTimers(serverTimers => {
+      this.setState({ timers: serverTimers })
+    })
   }
 
   handleCreateFormSubmit = timer => {
@@ -308,6 +304,8 @@ class TimersDashboard extends React.Component {
     this.setState({
       timers: this.state.timers.concat(t)
     })
+
+    client.createTimer(t)
   }
 
   updateTimer = attrs => {
@@ -323,12 +321,16 @@ class TimersDashboard extends React.Component {
         }
       })
     })
+
+    client.updateTimer(attrs)
   }
 
   deleteTimer = timerId => {
     this.setState({
       timers: this.state.timers.filter(t => t.id !== timerId)
     })
+
+    client.deleteTimer({ id: timerId })
   }
 
   startTimer = timerId => {
@@ -345,6 +347,8 @@ class TimersDashboard extends React.Component {
         }
       })
     })
+
+    client.startTimer({ id: timerId, start: now })
   }
 
   stopTimer = timerId => {
@@ -363,6 +367,8 @@ class TimersDashboard extends React.Component {
         }
       })
     })
+
+    client.stopTimer({ id: timerId, stop: now })
   }
 
   render() {
